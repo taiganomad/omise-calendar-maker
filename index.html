@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#171513">
+  <meta name="description" content="飲食店向けのSNS営業カレンダーを、月間・月後半・長期休暇の形式で作成しPNG保存できます。">
+  <title>お店カレンダー工房</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23171513'/%3E%3Crect x='12' y='17' width='40' height='35' rx='5' fill='%23fffaf0'/%3E%3Cpath d='M12 27h40M23 11v12M41 11v12' stroke='%23ff6a3d' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='25' cy='38' r='4' fill='%23ff6a3d'/%3E%3Ccircle cx='39' cy='38' r='4' fill='%23ff6a3d'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=18">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">31</span>
+      <div><strong>お店カレンダー工房</strong><small>営業予定を、投稿できる画像に。</small></div>
+    </div>
+    <div class="top-actions">
+      <span id="saveState" class="save-state">この端末に自動保存</span>
+      <button id="resetBtn" class="ghost-btn" type="button">入力をリセット</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="editor" aria-label="カレンダー編集">
+      <nav class="step-nav" aria-label="編集項目">
+        <button class="step-tab active" data-pane="schedule" type="button"><span>1</span>日程</button>
+        <button class="step-tab" data-pane="content" type="button"><span>2</span>お店情報</button>
+        <button class="step-tab" data-pane="design" type="button"><span>3</span>デザイン</button>
+      </nav>
+
+      <section id="pane-schedule" class="pane active">
+        <div class="section-heading">
+          <div><p class="eyebrow">STEP 1</p><h1>営業日を決める</h1></div>
+          <button id="todayBtn" class="mini-btn" type="button">今月</button>
+        </div>
+
+        <div class="field-grid two">
+          <label>年<input id="yearInput" type="number" min="2020" max="2100" inputmode="numeric"></label>
+          <label>月<select id="monthInput"></select></label>
+        </div>
+
+        <fieldset class="field-block">
+          <legend>カレンダーの範囲</legend>
+          <div class="segmented" id="rangeTabs">
+            <button data-range="month" class="active" type="button">1か月</button>
+            <button data-range="second" type="button">月の後半</button>
+            <button data-range="special" type="button">指定期間</button>
+          </div>
+          <div id="specialDates" class="field-grid two hidden">
+            <label>開始日<input id="specialStart" type="date"></label>
+            <label>終了日<input id="specialEnd" type="date"></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="field-block">
+          <legend>いつもの定休日</legend>
+          <p class="hint">曜日を選ぶと、すぐにプレビューへ反映されます。日ごとの設定で個別変更もできます。</p>
+          <div id="weekdayButtons" class="weekday-buttons"></div>
+        </fieldset>
+
+        <div class="field-block">
+          <div class="block-title"><span>日ごとの予定</span><small id="editMonthLabel"></small></div>
+          <details class="status-settings">
+            <summary>営業区分の共通設定</summary>
+            <p class="hint">同じ営業区分を使うすべての日に反映されます。表示文言を空にすると記号だけ表示できます。</p>
+            <label>編集する営業区分<select id="presetStatus"></select></label>
+            <div id="presetFields"></div>
+          </details>
+          <div id="statusLegend" class="legend-row" aria-label="営業区分の説明"></div>
+          <div id="dayEditor" class="day-editor"></div>
+        </div>
+      </section>
+
+      <section id="pane-content" class="pane">
+        <div class="section-heading"><div><p class="eyebrow">STEP 2</p><h1>掲載内容を整える</h1></div></div>
+        <div class="stack-fields">
+          <label>店名<input id="shopName" type="text" maxlength="28" value="静庵 (Shizuka-An)"></label>
+          <label>記念メッセージ（任意）<input id="badgeText" type="text" maxlength="18" placeholder="例：オープン2周年"></label>
+          <p class="hint heading-note">見出しは選択した西暦と月から自動で作成されます。</p>
+          <label>予約案内<textarea id="noticeText" rows="3" maxlength="120">ご予約・お問い合わせは公式LINEまたはお電話からお願いいたします。</textarea></label>
+          <div class="field-grid two">
+            <label>電話番号<input id="phoneText" type="text" maxlength="22" value="0772-45-1944"></label>
+            <label>補足<textarea id="reserveText" rows="2" maxlength="60">ランチ・ディナーともに要予約</textarea></label>
+          </div>
+          <label>営業時間<textarea id="hoursText" rows="3" maxlength="100">11:30-15:00(l.o.14:00)
+18:00-21:30(l.o.20:30)要予約</textarea></label>
+          <label>注意書き<textarea id="cautionText" rows="2" maxlength="80">バルタイムのご予約は前日までにお願いします</textarea></label>
+          <div class="upload-grid">
+            <label class="upload-box">ロゴ画像<input id="logoInput" type="file" accept="image/*"><span id="logoStatus">静庵ロゴを設定済み</span></label>
+            <label class="upload-box">QRコード<input id="qrInput" type="file" accept="image/*"><span id="qrStatus">LINE登録QRを設定済み</span></label>
+          </div>
+          <fieldset class="field-block">
+            <legend>バックアップ・引っ越し</legend>
+            <p class="hint">入力済みの予定や設定をファイルに保存し、別のURLや端末に引き継げます。</p>
+            <div class="field-grid two">
+              <button id="exportBackupBtn" class="secondary-btn" type="button">バックアップを保存</button>
+              <button id="importBackupBtn" class="secondary-btn" type="button">バックアップを読み込む</button>
+              <input id="backupFile" type="file" accept=".json,application/json" hidden>
+            </div>
+          </fieldset>
+        </div>
+      </section>
+
+      <section id="pane-design" class="pane">
+        <div class="section-heading"><div><p class="eyebrow">STEP 3</p><h1>雰囲気を選ぶ</h1></div></div>
+        <div id="themeGrid" class="theme-grid"></div>
+        <fieldset class="field-block">
+          <legend>背景デザイン</legend>
+          <p class="hint">「月ごとに自動選択」は、選んだ月に合わせて1〜12月の専用背景を切り替えます。</p>
+          <div id="backgroundGrid" class="background-grid"></div>
+        </fieldset>
+        <fieldset class="field-block">
+          <legend>画像サイズ</legend>
+          <div class="segmented" id="formatTabs">
+            <button data-format="portrait" class="active" type="button">縦長 4:5</button>
+            <button data-format="square" type="button">正方形 1:1</button>
+          </div>
+        </fieldset>
+        <fieldset class="field-block">
+          <legend>テキストサイズ</legend>
+          <p class="hint">カレンダー画像内の文字サイズを5段階で変更できます。</p>
+          <div class="segmented five" id="textSizeTabs">
+            <button data-text-size="small" type="button">小</button>
+            <button data-text-size="medium-small" type="button">やや小</button>
+            <button data-text-size="standard" class="active" type="button">標準</button>
+            <button data-text-size="large" type="button">大</button>
+            <button data-text-size="xlarge" type="button">極大</button>
+          </div>
+        </fieldset>
+        <label class="toggle-row"><span><strong>前後月の日付</strong><small>月間表示の余白に薄く表示</small></span><input id="showAdjacent" type="checkbox" checked></label>
+      </section>
+    </aside>
+
+    <section class="preview-area" aria-label="画像プレビュー">
+      <div class="preview-head">
+        <div><p class="eyebrow">LIVE PREVIEW</p><h2 id="previewTitle">Instagram 縦長</h2></div>
+        <div class="zoom-controls"><button id="zoomOut" type="button" aria-label="縮小">−</button><span id="zoomLabel">52%</span><button id="zoomIn" type="button" aria-label="拡大">＋</button></div>
+      </div>
+      <div id="canvasStage" class="canvas-stage">
+        <canvas id="calendarCanvas" width="1080" height="1350" aria-label="カレンダー画像プレビュー"></canvas>
+      </div>
+      <div class="export-bar">
+        <button id="downloadBtn" class="primary-btn" type="button"><span>PNG</span> このデザインを保存</button>
+        <button id="downloadAllBtn" class="secondary-btn" type="button">4デザインをまとめて作る</button>
+        <button id="downloadPdfBtn" class="secondary-btn" type="button"><span>PDF</span> A4印刷・PDF保存</button>
+      </div>
+      <p class="privacy-note">入力内容と画像はこのブラウザ内だけで処理されます。PDFは印刷画面から保存できます。</p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js?v=18"></script>
+</body>
+</html>
